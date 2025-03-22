@@ -1,0 +1,79 @@
+import streamlit as st
+import openai
+import os
+
+# Initialize OpenAI Client with the provided API Key
+client = openai.OpenAI(api_key="")
+
+# Function to generate career insights using GPT-4
+def generate_career_insights(job_title, career_level):
+    # Constructs the prompt with job-specific details
+    prompt = f"""
+    Provide an in-depth analysis of the {job_title} role for a {career_level} position, including:
+    - Required technical and soft skills
+    - Salary expectations
+    - Career growth opportunities
+    - Common career paths and transitions
+    - Major companies hiring for this role
+    """
+
+    try:
+        # Calls OpenAI's GPT-4 model to generate career insights
+        response = client.chat.completions.create(
+            model="gpt-4",
+            temperature=0.7,  # Adjusts creativity level
+            messages=[
+                {"role": "system", "content": "You are an AI career advisor."},
+                {"role": "user", "content": prompt}
+            ]
+        )
+        return response.choices[0].message.content  # Extracts and returns the response text
+    except Exception as e:
+        return f"Error: {e}"  # Returns error message if API call fails
+
+# Function to generate a job-related workspace image using DALL·E 3
+def generate_career_image(job_title):
+    # Constructs the prompt for generating an image of a typical workspace
+    prompt = f"A realistic and professional workspace for a {job_title}, depicting tools and environment."
+
+    try:
+        # Calls OpenAI's DALL·E-3 model to generate an image
+        response = client.images.generate(
+            model="dall-e-3",
+            prompt=prompt,
+            n=1,  # Requests one image
+            size="1024x1024"
+        )
+        return response.data[0].url  # Extracts and returns the generated image URL
+    except Exception as e:
+        return None  # Returns None if image generation fails
+
+# Streamlit UI - Web App Layout
+st.title("AI-Powered Career Exploration Tool")
+st.write("Explore different career roles with AI-generated insights and images.")
+
+# Input Widgets for user input
+job_title = st.text_input("Enter a job title:", "")  # User input field for job title
+career_level = st.selectbox(  # Dropdown menu for selecting career level
+    "Select Career Level:",
+    ["Entry-Level", "Mid-Level", "Senior-Level"]
+)
+
+# Button to trigger AI-based career insights and image generation
+if st.button("Generate Career Insights"):
+    if job_title:  # Ensures input is provided
+        with st.spinner("Generating insights..."):  # Displays loading indicator
+            insights = generate_career_insights(job_title, career_level)
+            st.subheader(f"{career_level} {job_title} - Career Insights")
+            st.write(insights)
+
+        with st.spinner("Generating image..."):  # Displays loading indicator
+            image_url = generate_career_image(job_title)
+            if image_url:
+                st.subheader("Work Environment Image")
+                st.image(image_url, caption=f"Workspace for {job_title}")
+            else:
+                st.warning("Could not generate an image. Please try again later.")
+
+    else:
+        st.warning("Please enter a job title.")  # Displays warning if no input is given
