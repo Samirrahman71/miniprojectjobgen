@@ -1,0 +1,2 @@
+# miniprojectjobgen
+career insights generator
