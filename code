@@ -3,7 +3,7 @@ import openai
 import os
 
 # Initialize OpenAI Client with the provided API Key
-client = openai.OpenAI(api_key="")
+client = openai.OpenAI(api_key="Your API KEY HERE")
 
 # Function to generate career insights using GPT-4
 def generate_career_insights(job_title, career_level):
